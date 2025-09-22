@@ -26,7 +26,7 @@ class LokiJsonFormatter(logging.Formatter):
     def format(self, record):
         # Create structured log entry for Loki
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
