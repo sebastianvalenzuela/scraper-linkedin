@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import re
 import logging
 from sqlalchemy.dialects.postgresql import insert
@@ -14,7 +14,6 @@ from models import ScraperLinkedinJob, ScraperLinkedinJobDetail, Base, SessionLo
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import json
 import logging
-from datetime import datetime
 from logging_loki import LokiHandler
 
 # Configurar logging
@@ -136,7 +135,7 @@ def parse_posted_time(posted_time_text, current_time=None):
         return None
 
     if current_time is None:
-        current_time = datetime.now()
+        current_time = datetime.now(timezone.utc)
 
     # Patron para extraer número y unidad (minutes, hours, days)
     pattern = r"(\d+)\s+(minute|minutes|hour|hours|day|days|week|weeks|month|months)\s+ago"
@@ -202,7 +201,7 @@ def process_job(job_id, country):
                 posted_time = posted_time.text.strip() if posted_time else None
 
                 # Calcular la fecha de publicación
-                current_time = datetime.now()
+                current_time = datetime.now(timezone.utc)
                 published_date = parse_posted_time(posted_time, current_time)
 
                 applicant_count = soup.find('span', class_='num-applicants__caption')
@@ -226,7 +225,7 @@ def process_job(job_id, country):
                                                         class_='description__job-criteria-text').text.strip() if len(
                     job_criteria_items) > 3 else None
 
-                extract_date = datetime.now()
+                extract_date = datetime.now(timezone.utc)
                 country_code = country
 
                 # Get country from the original job
